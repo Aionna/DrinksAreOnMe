@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drinks are on me</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐕</text></svg>">
+    <style>
+        /* Main layout adjustments */
+        * {
+            font-family: 'Quicksand', sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #282c34;
+            color: #ffffff;
+            font-family: 'Quicksand', sans-serif;
+            text-align: center;
+            padding: 0;
+            padding-top: 110px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .container {
+            padding: 20px;
+            margin: 0 auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        /* Drinks animation */
+        #drinks-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .drink {
+            position: absolute;
+            top: -50px;
+            font-size: 30px;
+            opacity: 0.4;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(calc(100vh + 50px)) rotate(720deg);
+            }
+        }
+
+        @keyframes wave {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 400% center;
+            }
+        }
+
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Title bar styling */
+        .title-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(40, 44, 52, 0.95);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 15px 0;
+            height: 80px;
+        }
+
+        .title-bar h1 {
+            font-size: 36px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b);
+            background-size: 400% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: wave 8s linear infinite;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+        }
+
+        .clickable-heart {
+            cursor: pointer;
+            display: inline-block;
+            animation: pulsate 3s ease-in-out infinite;
+        }
+
+        @keyframes pulsate {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+        }
+
+        .clickable-heart:hover {
+            animation: none;
+            transform: scale(1.4);
+            transition: transform 0.3s ease;
+        }
+
+        /* Game container styling */
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        /* Word display */
+        #word-display {
+            margin: 20px 0 10px 0;
+            font-size: 32px;
+            letter-spacing: 8px;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        /* Game instructions */
+        .game-info {
+            margin: 20px auto;
+            font-size: 18px;
+            color: #ffffff;
+            padding: 15px 25px;
+            border-radius: 25px;
+            max-width: 90%;
+        }
+
+        /* Keyboard */
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .key {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .key:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .key.used {
+            background-color: rgba(100, 100, 100, 0.3);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+        }
+
+        .key.correct {
+            background-color: rgba(46, 213, 115, 0.5);
+        }
+
+        .key.wrong {
+            background-color: rgba(235, 77, 75, 0.5);
+        }
+
+        /* Game status */
+        #tries-left {
+            font-size: 18px;
+            margin: 5px 0 15px 0;
+            color: #feca57;
+        }
+
+        #word-count {
+            font-size: 18px;
+            margin: 5px 0;
+            color: #48dbfb;
+        }
+
+        #hangman-figure {
+            width: 150px;
+            height: 150px;
+            margin: 10px auto;
+            position: relative;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        /* Unlock button */
+        #unlock-button {
+            display: none;
+            padding: 12px 30px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: pulsate 3s ease-in-out infinite;
+            max-width: 280px;
+        }
+
+        #unlock-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Modal for winning */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #282c34;
+            border-radius: 15px;
+            padding: 30px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #48dbfb;
+            animation: celebration 1s ease-in-out;
+        }
+
+        /* Fireworks effect for win */
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 5px;
+            animation: bang 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes bang {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty));
+                opacity: 0;
+            }
+        }
+
+        /* Footer styling */
+        .footer {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: rgba(40, 44, 52, 0.8);
+            margin-top: auto;
+        }
+
+        .glass-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        /* Media queries for mobile */
+        @media (max-width: 480px) {
+            .title-bar h1 {
+                font-size: 24px;
+                padding: 8px 15px;
+            }
+            
+            body {
+                padding-top: 100px;
+            }
+
+            .container {
+                width: 95%;
+                padding: 10px;
+            }
+            
+            .title-bar {
+                height: 70px;
+            }
+            
+            #game-container {
+                padding: 15px;
+                max-width: 95%;
+            }
+            
+            #word-display {
+                font-size: 24px;
+                letter-spacing: 5px;
+            }
+            
+            .key {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+                margin: 2px;
+            }
+            
+            .keyboard {
+                gap: 4px;
+            }
+
+            #unlock-button {
+                padding: 10px 20px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="drinks-container"></div>
+
+    <div class="title-bar">
+        <h1>Drinks are on me!</h1>
+    </div>
+
+    <div class="container">
+        <div id="game-container">
+            <div class="game-info">
+                <p>Guess the drink names! You have 5 tries for each word.</p>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 0%"></div>
+            </div>
+            
+            <div id="word-display"></div>
+            
+            <div id="word-count">Word: 1/3</div>
+            <div id="tries-left">Tries left: 5</div>
+            
+            <div class="keyboard" id="keyboard"></div>
+            
+            <button id="unlock-button">🔓 UNLOCKED!🔓</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="temple-icon">🏛️</div>
+        <p>Made with <span id="love-link" class="clickable-heart">❤️</span></p> </div>
+
+    <script>
+        // Game variables
+        const words = ['ABSINTHE', 'MARGARITA', 'SOMAEK'];
+        let currentWordIndex = 0;
+        let currentWord = '';
+        let displayWord = [];
+        let triesLeft = 5;
+        let usedLetters = [];
+        let correctWords = 0;
+        
+        // DOM elements
+        const wordDisplay = document.getElementById('word-display');
+        const keyboard = document.getElementById('keyboard');
+        const triesLeftElement = document.getElementById('tries-left');
+        const wordCountElement = document.getElementById('word-count');
+        const progressBar = document.querySelector('.progress-bar');
+        const unlockButton = document.getElementById('unlock-button');
+        // const modalUnlockButton = document.getElementById('modal-unlock-button'); // Not used as modal removed
+        // const winModal = document.getElementById('win-modal'); // Not used as modal removed
+        
+        // Initialize the game
+        function initGame() {
+            // Reset game state
+            currentWord = words[currentWordIndex];
+            displayWord = Array(currentWord.length).fill('_');
+            triesLeft = 5;
+            usedLetters = [];
+            
+            // Update UI
+            updateWordDisplay();
+            updateTriesLeft();
+            updateWordCount();
+            createKeyboard();
+            
+            // Reset keyboard appearance
+            const keyElements = document.querySelectorAll('.key');
+            keyElements.forEach(key => {
+                key.classList.remove('used', 'correct', 'wrong');
+            });
+        }
+        
+        // Create keyboard
+        function createKeyboard() {
+            keyboard.innerHTML = '';
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            
+            for (let letter of letters) {
+                const keyButton = document.createElement('div');
+                keyButton.classList.add('key');
+                keyButton.textContent = letter;
+                keyButton.addEventListener('click', () => handleLetterClick(letter));
+                keyboard.appendChild(keyButton);
+            }
+        }
+        
+        // Update word display with underscores and guessed letters
+        function updateWordDisplay() {
+            wordDisplay.textContent = displayWord.join(' ');
+        }
+        
+        // Update tries left counter
+        function updateTriesLeft() {
+            triesLeftElement.textContent = `Tries left: ${triesLeft}`;
+        }
+        
+        // Update word counter
+        function updateWordCount() {
+            wordCountElement.textContent = `Word: ${currentWordIndex + 1}/3`;
+            
+            // Update progress bar
+            const progressPercentage = (currentWordIndex / words.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+        
+        // Handle letter click
+        function handleLetterClick(letter) {
+            // Ignore if letter was already used or game is over
+            if (usedLetters.includes(letter)) return;
+            
+            usedLetters.push(letter);
+            
+            // Find the corresponding key element
+            const keyElement = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
+            keyElement.classList.add('used');
+            
+            // Check if letter is in the word
+            if (currentWord.includes(letter)) {
+                keyElement.classList.add('correct');
+                
+                // Update display word
+                for (let i = 0; i < currentWord.length; i++) {
+                    if (currentWord[i] === letter) {
+                        displayWord[i] = letter;
+                    }
+                }
+                
+                updateWordDisplay();
+                
+                // Check if word is complete
+                if (!displayWord.includes('_')) {
+                    correctWords++;
+                    
+                    // Check if all words are complete
+                    if (currentWordIndex === words.length - 1) {
+                        setTimeout(() => {
+                            // All words complete
+                            completeGame();
+                        }, 500);
+                    } else {
+                        // Move to next word
+                        setTimeout(() => {
+                            currentWordIndex++;
+                            initGame();
+                        }, 1000);
+                    }
+                }
+            } else {
+                // Wrong guess
+                keyElement.classList.add('wrong');
+                triesLeft--;
+                updateTriesLeft();
+                
+                // Check if out of tries
+                if (triesLeft === 0) {
+                    // Reveal word and move to next word
+                    displayWord = currentWord.split('');
+                    updateWordDisplay();
+                    
+                    setTimeout(() => {
+                        if (currentWordIndex === words.length - 1) {
+                            // End of game
+                            currentWordIndex = 0; // Or some other end game logic if not resetting immediately
+                            initGame(); // Resets to word 1
+                        } else {
+                            // Move to next word
+                            currentWordIndex++;
+                            initGame();
+                        }
+                    }, 1500);
+                }
+            }
+        }
+        
+        // Complete game function when all words are guessed
+        function completeGame() {
+            // Check if all 3 words were guessed correctly
+            if (correctWords === 3) {
+                // Show the unlock button
+                unlockButton.style.display = 'block';
+                
+                // Create firework effect
+                createFireworks();
+                
+                // Hide the keyboard to focus on the unlock button
+                keyboard.style.opacity = '0.5'; // Consider disabling keyboard instead of just opacity
+            } else {
+                // Reset game if not all words were correct (e.g., if game completion is possible with errors)
+                currentWordIndex = 0;
+                correctWords = 0;
+                initGame();
+            }
+        }
+        
+        // Create firework effect
+        function createFireworks() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.classList.add('firework');
+                    
+                    // Random position
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    firework.style.left = `${x}px`;
+                    firework.style.top = `${y}px`;
+                    
+                    // Random color
+                    const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.color = color;
+                    
+                    // Random direction
+                    const tx = (Math.random() - 0.5) * 200;
+                    const ty = (Math.random() - 0.5) * 200;
+                    firework.style.setProperty('--tx', `${tx}px`);
+                    firework.style.setProperty('--ty', `${ty}px`);
+                    
+                    document.body.appendChild(firework);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        firework.remove();
+                    }, 1000);
+                }, i * 50);
+            }
+        }
+        
+        // --- MODIFIED LINK DEFINITIONS ---
+        // Replace these URLs with your actual URLs
+        const unlockButtonLink = 'Phttps://drive.proton.me/urls/X47XA1YNZG#2MLNC7MoQKQL'; 
+        const heartIconLink = 'https://drive.proton.me/urls/B4GKHXV00W#5sUHl4JsKI1f'; // Example: 'https://drive.proton.me/urls/B4GKHXV00W#5sUHl4JsKI1f'
+        
+        // Setup unlock button click event
+        unlockButton.addEventListener('click', () => {
+            window.open(unlockButtonLink, '_blank'); // MODIFIED to use unlockButtonLink
+        });
+        
+        // Set up heart link immediately - don't wait for DOMContentLoaded
+        const loveLink = document.getElementById('love-link'); // This now correctly finds the heart span
+        if (loveLink) {
+            loveLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open(heartIconLink, '_blank'); // MODIFIED to use heartIconLink
+            });
+        }
+        
+        // Drinks animation logic
+        const maxDrinks = 8;
+        let activeDrinks = 0;
+        const drinkEmojis = ['🍹', '🍸', '🍷', '🍺', '🥂', '🧋', '🥤'];
+
+        function createDrink() {
+            if (activeDrinks >= maxDrinks) return;
+            
+            const drinksContainer = document.getElementById('drinks-container');
+            const drink = document.createElement('span');
+            drink.classList.add('drink');
+            
+            // Randomly select a drink emoji
+            const randomDrinkIndex = Math.floor(Math.random() * drinkEmojis.length);
+            drink.textContent = drinkEmojis[randomDrinkIndex];
+
+            // Random position and animation duration
+            drink.style.left = `${Math.random() * 100}vw`;
+            const size = Math.random() * 20 + 20; // Random size between 20px and 40px
+            drink.style.fontSize = `${size}px`;
+            
+            const duration = Math.random() * 10 + 12; // 12-22 seconds
+            drink.style.animationDuration = `${duration}s`;
+            
+            drinksContainer.appendChild(drink);
+            activeDrinks++;
+
+            // Remove the drink after animation completes and create a new one
+            setTimeout(() => {
+                drink.remove();
+                activeDrinks--;
+                // Only create a new one if we are below max, to avoid rapid creation if tab is inactive
+                if (activeDrinks < maxDrinks) {
+                    createDrink();
+                }
+            }, duration * 1000);
+        }
+
+        // Create initial drinks with slight delay for a more natural appearance
+        function initDrinks() {
+            for (let i = 0; i < maxDrinks; i++) {
+                setTimeout(() => {
+                    createDrink();
+                }, i * 300); // Stagger creation of initial drinks
+            }
+        }
+
+        // Ensure we always have maxDrinks on screen (less aggressive creation)
+        setInterval(() => {
+            if (activeDrinks < maxDrinks) {
+                createDrink();
+            }
+        }, 1000); // Check every second if a new drink is needed
+        
+        // Initialize falling drinks
+        initDrinks();
+        
+        // Start the game
+        initGame();
+        
+        // Add keyboard support
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            // Make sure game is active, e.g. by checking if keyboard is visible/interactive
+            if (/^[A-Z]$/.test(key) && keyboard.style.opacity !== '0.5') { 
+                handleLetterClick(key);
+            }
+        });
+    </script>
+</body>
+</html>
