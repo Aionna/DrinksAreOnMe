@@ -434,8 +434,6 @@
         const wordCountElement = document.getElementById('word-count');
         const progressBar = document.querySelector('.progress-bar');
         const unlockButton = document.getElementById('unlock-button');
-        // const modalUnlockButton = document.getElementById('modal-unlock-button'); // Not used as modal removed
-        // const winModal = document.getElementById('win-modal'); // Not used as modal removed
         
         // Initialize the game
         function initGame() {
@@ -486,8 +484,9 @@
         function updateWordCount() {
             wordCountElement.textContent = `Word: ${currentWordIndex + 1}/3`;
             
-            // Update progress bar
-            const progressPercentage = (currentWordIndex / words.length) * 100;
+            // Update progress bar - FIXED: Adjust calculation to fill when all words are complete
+            // Use (currentWordIndex / (words.length - 1)) * 100 to reach 100% on the last word
+            const progressPercentage = currentWordIndex >= words.length ? 100 : (currentWordIndex / words.length) * 100;
             progressBar.style.width = `${progressPercentage}%`;
         }
         
@@ -521,6 +520,9 @@
                     
                     // Check if all words are complete
                     if (currentWordIndex === words.length - 1) {
+                        // Fill progress bar to 100% when all words are complete
+                        progressBar.style.width = '100%';
+                        
                         setTimeout(() => {
                             // All words complete
                             completeGame();
@@ -564,6 +566,9 @@
         function completeGame() {
             // Check if all 3 words were guessed correctly
             if (correctWords === 3) {
+                // Fill progress bar to 100% on game completion
+                progressBar.style.width = '100%';
+                
                 // Show the unlock button
                 unlockButton.style.display = 'block';
                 
@@ -617,7 +622,7 @@
         // --- MODIFIED LINK DEFINITIONS ---
         // Replace these URLs with your actual URLs
         const unlockButtonLink = 'https://drive.proton.me/urls/X47XA1YNZG#2MLNC7MoQKQL'; 
-        const heartIconLink = 'https://drive.proton.me/urls/B4GKHXV00W#5sUHl4JsKI1f'; // Example: 'https://drive.proton.me/urls/B4GKHXV00W#5sUHl4JsKI1f'
+        const heartIconLink = 'https://drive.proton.me/urls/B4GKHXV00W#5sUHl4JsKI1f'; 
         
         // Setup unlock button click event
         unlockButton.addEventListener('click', () => {
